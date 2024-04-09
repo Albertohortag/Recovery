@@ -15,14 +15,12 @@ import { Rhino3dmLoader } from "three/addons/loaders/3DMLoader.js"
 import { runCompute } from "@/scripts/compute.js"
 import { loadRhino } from "@/scripts/compute.js";
 
-
-import ButtonInput from "./ButtonInput.vue"
-
 const loader = new Rhino3dmLoader()
 loader.setLibraryPath('https://cdn.jsdelivr.net/npm/rhino3dm@8.0.0-beta2/')
 
 
 const props = defineProps(["data", "path"]);
+const emits = defineEmits(["updateMetadata"]);
 
 
 // Three js objects
@@ -43,8 +41,11 @@ function init() {
     container.appendChild(renderer.domElement)
 
   // https://threejs.org/docs/#api/en/cameras/PerspectiveCamera
-  camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000)
-  camera.position.set(0, 0, 40)
+  camera = new THREE.PerspectiveCamera(20, container.offsetWidth / container.offsetHeight, 0.1, 100)
+  camera.position.set(2, 3, 7)
+
+  
+
 
   // https://threejs.org/docs/?q=scene#api/en/scenes/Scene
   scene = new THREE.Scene()
@@ -56,6 +57,24 @@ function init() {
 
 
   // add some ambient light here
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5) 
+  scene.add(ambientLight)
+
+  // Directional Light
+  const directionalLight = new THREE.DirectionalLight(0x008080, 1) 
+  directionalLight.position.set(1, 1, 1) 
+  directionalLight.castShadow = true /
+  scene.add(directionalLight)
+
+  // Set up shadow properties for the light
+  directionalLight.shadow.mapSize.width = 1024
+  directionalLight.shadow.mapSize.height = 1024
+  directionalLight.shadow.camera.near = 0.5
+  directionalLight.shadow.camera.far = 500
+  directionalLight.shadow.camera.left = -100
+  directionalLight.shadow.camera.right = 100
+  directionalLight.shadow.camera.top = 100
+  directionalLight.shadow.camera.bottom = -100
 
 
 
@@ -68,6 +87,10 @@ function init() {
 async function compute() {
   console.log("Runnning compute... \ndata sent: ", props.data)
   const doc = await runCompute(props.data, props.path)
+
+  if (doc.metadata) {
+    emits("updateMetadata", doc.metadata);
+  }
 
   // clear objects from scene
   scene.traverse((child) => {
@@ -85,10 +108,14 @@ async function compute() {
     let material = new THREE.MeshNormalMaterial()
 
     object.traverse((child) => {
+
+      console.log(child)
       if (child.isMesh) {
         child.material = material
       }
     })
+
+    
 
 
     scene.add(object);

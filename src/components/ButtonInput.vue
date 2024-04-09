@@ -9,10 +9,10 @@ import { ref } from "vue";
 
 const emits = defineEmits(["toggleCompute"]);
 
-const props = defineProps(["tittle"]);
-const titlec = ref(props.tittle);
+const props = defineProps(["title"]);
+const titlec = ref(props.title);
 
 async function onButtonClick() {
-  emits("toggleCompute", 10);
+  emits("toggleCompute", 1);
 }
 </script>

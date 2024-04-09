@@ -8,72 +8,76 @@ import { ref, onBeforeMount, computed } from "vue";
 import { loadRhino } from "@/scripts/compute.js";
 
 // Import other Vue components in order to add them to a template.
-import Header from "./components/Header.vue"
-import GeometryView from "./components/GeometryView.vue"
-import SliderInput from "./components/SliderInput.vue"
-import DropdownSelector from "./components/DropdownSelector.vue"
-import ToggleInput from "./components/ToggleInput.vue"
+import Header from "./components/Header.vue";
+import GeometryView from "./components/GeometryView.vue";
+import SliderInput from "./components/SliderInput.vue";
+import DropdownSelector from "./components/DropdownSelector.vue";
+import ToggleInput from "./components/ToggleInput.vue";
 
-import def from './assets/voronoy.gh' //import Grasshopper definition for assets
+import def from './assets/voronoy.gh'; //import Grasshopper definition for assets
 
 let firstSliderName = ref("Width") //must match the Input name in your GH definition!
-let firstSliderValue = ref(2.5) //default slider value
+let firstSliderValue = ref(2.1) //default slider value
 
 let secondSliderName = ref("Height") //must match the Input name in your GH definition!
-let secondSliderValue = ref(1.8) //default slider value
+let secondSliderValue = ref(2) //default slider value
 
-let toggleName = ref("Close Wall")
+let dropdownName = ref("Type");
+let dropdownIndex = ref(0);
 
-let dropdownIndex = ref(0)
+let toggleName = ref("Close");
+let toggleValue = ref(false);
 
-let dropdownName = ref("Type")
 const dropdownOptions = [
-  { label: "Thin", value: 0.5 },
-  { label: "Medium", value: 0.6 },
-  { label: "Thick", value: 0.7 },
+  { label: "Thick", value: 0 },
+  { label: "Medium", value: 1 },
+  { label: "Thin", value: 2 },
 
 ];
 
+
 ///.............................................
-let path = def //path to the Grasshopper definition
-let data = ref({})
-let metadata = ref([])
+let path = def; //path to the Grasshopper definition
+let data = ref({});
+let metadata = ref([]);
 
 
 function updateValue(newValue, parameterName) {
-  console.log(parameterName)
-
   if (parameterName === firstSliderName.value) {
-    firstSliderValue.value = newValue
-  } 
-  
-  else if (parameterName === secondSliderName.value) {
-    secondSliderValue.value = newValue
+    firstSliderValue.value = newValue;
+  } else if (parameterName === secondSliderName.value) {
+    secondSliderValue.value = newValue;
+  } else if (parameterName === toggleName.value) {
+    toggleValue.value = newValue;
   }
+}
 
-  else if (parameterName === DropdownSelector.value) {
-    DropdownSelector.value = newValue
+function handleDropdownUpdate(payload) {
+  if (payload.title === dropdownName.value) {
+    dropdownIndex.value = payload.value;
   }
+}
 
-
+//receive metadata from GeometryView component
+function receiveMetadata(newMetadata) {
+  console.log(newMetadata);
+  metadata.value = newMetadata; 
 }
 
 
 // a computed ref. Vue will keep track of this and update it
 const computeData = computed(() => {
-  data = {
+  return {
     [firstSliderName.value]: Number(firstSliderValue.value),
     [secondSliderName.value]: Number(secondSliderValue.value),
-    [DropdownSelector.value]: Number(DropdownSelector.value),
-    [ToggleInput.value]: Number(ToggleInput.value),
-
+    [dropdownName.value]: dropdownIndex.value, // Use the reactive variable directly
+    [toggleName.value]: toggleValue.value, // Use the reactive variable directly
   };
 
   return data
-})
+});
 
-onBeforeMount( () => {
-})
+onBeforeMount(() => {});
 
 </script>
 
@@ -87,27 +91,37 @@ with data, objects, functions etc. -->
 
 
         
-      <SliderInput :title="firstSliderName" :min="1.0" :max="4.0" :step="0.1" :val="2.5" @update="updateValue"></SliderInput> 
+      <SliderInput :title="firstSliderName" :min="1.0" :max="3.0" :step="0.1"  @update="updateValue"></SliderInput> 
 
-      <SliderInput :title="secondSliderName" :min="1.0" :max="3.0" :step="0.1" :val="1.8" @update="updateValue"></SliderInput>
+      <SliderInput :title="secondSliderName" :min="1.0" :max="3.0" :step="0.1"  @update="updateValue"></SliderInput>
 
-      <DropdownSelector :title="dropdownName" :options="dropdownOptions" :val="dropdownIndex" @update="updateValue"/>
+      <DropdownSelector :title="dropdownName" :options="dropdownOptions" @update="handleDropdownUpdate" />
 
-      <ToggleInput :title="toggleName" :val="true" @update="updateValue"></ToggleInput>
+      <ToggleInput :title="toggleName" :val="false" @update="updateValue"></ToggleInput>
+
+      <!-- <GeometryView @updateMetadata="receiveMetadata" /> -->
+  
+
+
+      <!-- <p> Metadata = {{ metadata }}</p> -->
+
+    <div id = "metadataDisplay" v-if="metadata && metadata.length > 0" style ="color: white;">
+      <div id="metadataTitle">Additional data:</div>
+      <br>
+      <div class ="metadata">{{metadata[0].name}}: {{ metadata[0].value }}</div>
+      <br>
+      <div class="metadata">{{metadata[1].name}}: {{ metadata[1].value }}</div>
+      <br>
+      <div class="metadata">{{metadata[3].name}}: {{ metadata[3].value }}</div>
+  </div>
 
     </div>
       
     <div id="viewer" class="container">
-
-      <GeometryView
-      v-bind:data="computeData"
-      v-bind:path="path"
-      v-on:updateMetadata="receiveMetedata"
-      />
-
+      <GeometryView :data="computeData" :path="path" @updateMetadata="recieveMetadata" />
     </div>
-  </div>
 
+  </div>
 </template>
 
 <!-- Style is for CSS styling -->

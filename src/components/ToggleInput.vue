@@ -20,7 +20,7 @@ function emitValueUpdate()
 
 <template>
     <form class = "definition-input">
-        <label class="input-title" for="toggle"> {{ title }}: {{  toggleValue }}</label>
+        <label class="input-title" for="toggle"> {{ title }}</label>
 
         <div class="checkbox-wrapper-22">
         <label class="switch" for="checkbox">
@@ -30,6 +30,8 @@ function emitValueUpdate()
 
             <div class="slider round"></div>
         </label>
+
         </div>
+        
     </form>
 </template>

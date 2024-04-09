@@ -1,36 +1,28 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps, defineEmits } from 'vue';
 
 // Define props coming from parent component
-const props = defineProps(["title", "options"]);
-const title = ref(props.title)
+const props = defineProps({
+  title: String,
+  options: Array
+});
 
 // Define events that will be emitted to parent
-const emits = defineEmits(["update"]);
+const emit = defineEmits(['update']);
 
-// Value that is binded with selection option
-var selectedOption = ref(0);
+const selectedOption = ref(props.options[0]?.value || 0);
 
 // Function called on v-on:input
 function emitValueUpdate() {
-  emits("update", selectedOption.value, title.value);
+  emit('update', { value: selectedOption.value, title: props.title });
 }
 </script>
 
 <template>
   <form class="definition-input">
-    <label class="input-title">{{ title }}: {{ selectedOption }} </label>
-
-    <select
-      v-model="selectedOption"
-      class="dropdown"
-      v-on:change="emitValueUpdate"
-    >
-      <option
-        v-for="option in options"
-        v-bind:key="option.label"
-        v-bind:value="option.value"
-      >
+    <label class="input-title">{{ title }}: {{ selectedOption }}</label>
+    <select v-model="selectedOption" class="dropdown" @change="emitValueUpdate">
+      <option v-for="option in options" :key="option.label" :value="option.value">
         {{ option.label }}
       </option>
     </select>

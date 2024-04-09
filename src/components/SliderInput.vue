@@ -12,7 +12,7 @@ const emits = defineEmits(['update'])
 
 
 
-var sliderValue = ref(10)
+var sliderValue = ref(2.1)
 
 function sendValueUpdate()
 {
@@ -31,7 +31,7 @@ function sendValueUpdate()
 			min="1.0" 
       max="3.0" 
       step="0.1"
-      val = "2.5"
+      val = "2.1"
 			v-model="sliderValue" 
       @mouseup="sendValueUpdate"
 			/>
